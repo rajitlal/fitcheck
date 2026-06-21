@@ -16,8 +16,6 @@ export function MixAndMatch() {
   const [itemsByCategory, setItemsByCategory] = useState<Record<string, ClothingItem[]>>({})
   const [selectedIndex, setSelectedIndex] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
-  const [score, setScore] = useState<number | null>(null)
-  const [scoring, setScoring] = useState(false)
 
   useEffect(() => {
     async function fetchItems() {
@@ -48,7 +46,6 @@ export function MixAndMatch() {
       const next = (current + direction + items.length) % items.length
       return { ...prev, [category]: next }
     })
-    setScore(null) // clear the old score once the combo changes
   }
 
   const saveOutfit = async () => {
@@ -77,15 +74,9 @@ export function MixAndMatch() {
 
     if (itemsError) {
       console.error(itemsError)
-      return
+    } else {
+      alert('Outfit saved!')
     }
-
-    // Now ask the backend how well these items work together
-    setScoring(true)
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/outfit-score/${outfitData.id}`)
-    const scoreData = await response.json()
-    setScore(scoreData.score)
-    setScoring(false)
   }
 
   if (loading) return <p>Loading...</p>
@@ -111,8 +102,6 @@ export function MixAndMatch() {
         )
       })}
       <button onClick={saveOutfit}>Save Outfit</button>
-      {scoring && <p>Scoring outfit...</p>}
-      {score !== null && <p>Outfit Coherence Score: {score}</p>}
     </div>
   )
 }

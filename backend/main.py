@@ -3,10 +3,6 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from supabase import create_client
-import requests
-from io import BytesIO
-from PIL import Image
-import ollama
 
 load_dotenv()
 
@@ -23,15 +19,6 @@ supabase_url = os.environ.get("SUPABASE_URL")
 supabase_key = os.environ.get("SUPABASE_SECRET_KEY")
 supabase = create_client(supabase_url, supabase_key)
 
-clip_model = None
-
-def get_clip_model():
-    global clip_model
-    if clip_model is None:
-        from sentence_transformers import SentenceTransformer
-        clip_model = SentenceTransformer('clip-ViT-B-32')
-    return clip_model
-
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
@@ -43,7 +30,7 @@ async def upload_clothing_item(
     name: str = Form(...),
     category: str = Form(...),
 ):
-    from rembg import remove  # imported here, not at the top — keeps server startup fast
+    from rembg import remove
 
     contents = await file.read()
     output_bytes = remove(contents)
@@ -65,48 +52,3 @@ async def upload_clothing_item(
     }).execute()
 
     return {"image_url": public_url, "item": result.data}
-
-@app.get("/outfit-score/{outfit_id}")
-def score_outfit(outfit_id: str):
-    from sentence_transformers import util
-
-    outfit_items = supabase.table("outfit_items").select(
-        "clothing_item_id, clothing_items(image_url)"
-    ).eq("outfit_id", outfit_id).execute()
-
-    image_urls = [row["clothing_items"]["image_url"] for row in outfit_items.data]
-
-    if len(image_urls) < 2:
-        return {"score": None, "message": "Need at least 2 items to score"}
-
-    embeddings = []
-    for url in image_urls:
-        response = requests.get(url)
-        image = Image.open(BytesIO(response.content))
-        embeddings.append(get_clip_model().encode(image))
-
-    similarities = []
-    for i in range(len(embeddings)):
-        for j in range(i + 1, len(embeddings)):
-            sim = util.cos_sim(embeddings[i], embeddings[j]).item()
-            similarities.append(sim)
-
-    average_score = sum(similarities) / len(similarities)
-
-    return {"score": round(average_score, 3)}
-
-@app.post("/suggest-outfit")
-def suggest_outfit(user_id: str = Form(...), occasion: str = Form(...)):
-    items = supabase.table("clothing_items").select("name, category").eq("user_id", user_id).execute()
-    items_list = "\n".join([f"- {item['name']} ({item['category']})" for item in items.data])
-
-    prompt = f"""Here is a list of clothing items in someone's closet:
-{items_list}
-Suggest one complete outfit (a top, a bottom, shoes, and optionally outerwear/accessories) suitable for: {occasion}.
-Explain briefly why these items work well together."""
-
-    response = ollama.chat(model='llama3.2', messages=[
-        {"role": "user", "content": prompt}
-    ])
-
-    return {"suggestion": response['message']['content']}

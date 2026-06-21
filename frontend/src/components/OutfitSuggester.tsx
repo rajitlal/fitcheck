@@ -18,7 +18,7 @@ export function OutfitSuggester() {
     formData.append('user_id', user.id)
     formData.append('occasion', occasion)
 
-    const response = await fetch('http://localhost:8000/suggest-outfit', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/suggest-outfit`, {
       method: 'POST',
       body: formData,
     })

@@ -82,7 +82,7 @@ export function MixAndMatch() {
 
     // Now ask the backend how well these items work together
     setScoring(true)
-    const response = await fetch(`http://localhost:8000/outfit-score/${outfitData.id}`)
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/outfit-score/${outfitData.id}`)
     const scoreData = await response.json()
     setScore(scoreData.score)
     setScoring(false)

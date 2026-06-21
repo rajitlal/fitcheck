@@ -23,7 +23,7 @@ export function UploadForm() {
     formData.append('name', name)
     formData.append('category', category)
 
-    const response = await fetch('http://localhost:8000/upload-clothing-item', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/upload-clothing-item`, {
       method: 'POST',
       body: formData,
     })

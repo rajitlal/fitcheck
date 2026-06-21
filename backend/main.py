@@ -25,8 +25,15 @@ supabase_url = os.environ.get("SUPABASE_URL")
 supabase_key = os.environ.get("SUPABASE_SECRET_KEY")
 supabase = create_client(supabase_url, supabase_key)
 
-# Loaded once at startup — loading it fresh on every request would be painfully slow
-clip_model = SentenceTransformer('clip-ViT-B-32')
+# Not loaded until first actually needed — keeps server startup fast
+# and avoids loading torch + the model before the port is even open
+clip_model = None
+
+def get_clip_model():
+    global clip_model
+    if clip_model is None:
+        clip_model = SentenceTransformer('clip-ViT-B-32')
+    return clip_model
 
 @app.get("/health")
 def health_check():
@@ -75,7 +82,7 @@ def score_outfit(outfit_id: str):
     for url in image_urls:
         response = requests.get(url)
         image = Image.open(BytesIO(response.content))
-        embeddings.append(clip_model.encode(image))
+        embeddings.append(get_clip_model().encode(image))
 
     similarities = []
     for i in range(len(embeddings)):

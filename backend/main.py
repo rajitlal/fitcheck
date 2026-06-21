@@ -2,15 +2,13 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
-from rembg import remove
 from supabase import create_client
-from sentence_transformers import SentenceTransformer, util
 import requests
 from io import BytesIO
 from PIL import Image
 import ollama
 
-load_dotenv()  # reads backend/.env into the environment
+load_dotenv()
 
 app = FastAPI()
 
@@ -25,13 +23,12 @@ supabase_url = os.environ.get("SUPABASE_URL")
 supabase_key = os.environ.get("SUPABASE_SECRET_KEY")
 supabase = create_client(supabase_url, supabase_key)
 
-# Not loaded until first actually needed — keeps server startup fast
-# and avoids loading torch + the model before the port is even open
 clip_model = None
 
 def get_clip_model():
     global clip_model
     if clip_model is None:
+        from sentence_transformers import SentenceTransformer
         clip_model = SentenceTransformer('clip-ViT-B-32')
     return clip_model
 
@@ -46,6 +43,8 @@ async def upload_clothing_item(
     name: str = Form(...),
     category: str = Form(...),
 ):
+    from rembg import remove  # imported here, not at the top — keeps server startup fast
+
     contents = await file.read()
     output_bytes = remove(contents)
     filename = f"{os.urandom(8).hex()}.png"
@@ -69,6 +68,8 @@ async def upload_clothing_item(
 
 @app.get("/outfit-score/{outfit_id}")
 def score_outfit(outfit_id: str):
+    from sentence_transformers import util
+
     outfit_items = supabase.table("outfit_items").select(
         "clothing_item_id, clothing_items(image_url)"
     ).eq("outfit_id", outfit_id).execute()

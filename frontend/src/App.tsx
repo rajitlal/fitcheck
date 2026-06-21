@@ -1,7 +1,8 @@
 import { useAuth } from './context/AuthContext'
 import { AuthForm } from './components/AuthForm'
 import { UploadForm } from './components/UploadForm'
-import { ClosetGrid } from './components/ClosetGrid'
+import { MixAndMatch } from './components/MixAndMatch'
+import { OutfitSuggester } from './components/OutfitSuggester'
 
 function App() {
   const { user, signOut } = useAuth()
@@ -15,7 +16,8 @@ function App() {
       <p>Logged in as {user.email}</p>
       <button onClick={signOut}>Sign Out</button>
       <UploadForm />
-      <ClosetGrid />
+      <MixAndMatch />
+      <OutfitSuggester />
     </div>
   )
 }

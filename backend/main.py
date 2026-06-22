@@ -32,24 +32,56 @@ async def upload_clothing_item(
     category: str = Form(...),
 ):
     from rembg import remove
+    from fastapi import HTTPException
 
-    contents = await file.read()
-    output_bytes = remove(contents)
-    filename = f"{os.urandom(8).hex()}.png"
+    try:
+        # Read and validate file
+        contents = await file.read()
+        if not contents:
+            raise HTTPException(status_code=400, detail="File is empty")
 
-    supabase.storage.from_("clothing-images").upload(
-        filename,
-        output_bytes,
-        {"content-type": "image/png"}
-    )
+        print(f"Processing image for user {user_id}: {name}")
+        
+        # Remove background
+        output_bytes = remove(contents)
+        filename = f"{os.urandom(8).hex()}.png"
 
-    public_url = supabase.storage.from_("clothing-images").get_public_url(filename)
+        # Upload to storage
+        try:
+            supabase.storage.from_("clothing-images").upload(
+                filename,
+                output_bytes,
+                {"content-type": "image/png"}
+            )
+            print(f"Uploaded to storage: {filename}")
+        except Exception as e:
+            print(f"Storage upload error: {e}")
+            raise HTTPException(status_code=500, detail="Failed to upload image to storage")
 
-    result = supabase.table("clothing_items").insert({
-        "user_id": user_id,
-        "name": name,
-        "category": category,
-        "image_url": public_url,
-    }).execute()
+        # Get public URL
+        try:
+            public_url = supabase.storage.from_("clothing-images").get_public_url(filename)
+        except Exception as e:
+            print(f"URL generation error: {e}")
+            raise HTTPException(status_code=500, detail="Failed to generate image URL")
 
-    return {"image_url": public_url, "item": result.data}
+        # Save to database
+        try:
+            result = supabase.table("clothing_items").insert({
+                "user_id": user_id,
+                "name": name,
+                "category": category,
+                "image_url": public_url,
+            }).execute()
+            print(f"Saved to database: {result.data}")
+        except Exception as e:
+            print(f"Database insert error: {e}")
+            raise HTTPException(status_code=500, detail="Failed to save item to database")
+
+        return {"image_url": public_url, "item": result.data}
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred during upload")

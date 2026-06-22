@@ -6,17 +6,40 @@ export function AuthForm() {
   const [password, setPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
   const { signUp, signIn } = useAuth()
 
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError(null)
+    setSuccess(null)
 
     const { error } = isSignUp
       ? await signUp(email, password)
       : await signIn(email, password)
 
-    if (error) setError(error.message)
+    if (error) {
+      setError(error.message)
+    } else {
+      setSuccess(isSignUp ? 'Account created! You can now log in.' : 'Logged in successfully!')
+      setEmail('')
+      setPassword('')
+      if (isSignUp) {
+        // Auto-switch to login after signup
+        setTimeout(() => {
+          setIsSignUp(false)
+          setSuccess(null)
+        }, 1500)
+      }
+    }
+  }
+
+  const handleToggleMode = () => {
+    setIsSignUp(!isSignUp)
+    setEmail('')
+    setPassword('')
+    setError(null)
+    setSuccess(null)
   }
 
   return (
@@ -53,6 +76,7 @@ export function AuthForm() {
       </div>
 
       {error && <p className="text-sm text-red-400">{error}</p>}
+      {success && <p className="text-sm text-green-400">{success}</p>}
 
       <button
         type="submit"
@@ -63,7 +87,7 @@ export function AuthForm() {
 
       <button
         type="button"
-        onClick={() => setIsSignUp(!isSignUp)}
+        onClick={handleToggleMode}
         className="w-full text-center text-sm text-muted underline decoration-dotted hover:text-text hover:decoration-solid transition-colors"
       >
         {isSignUp ? 'Already have an account? Log In' : "Don't have an account? Sign Up"}

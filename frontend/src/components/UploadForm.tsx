@@ -33,6 +33,15 @@ export function UploadForm() {
 
       const data = await response.json()
       setImageUrl(data.image_url)
+      // Reset form fields after successful upload
+      setFile(null)
+      setName('')
+      setCategory('top')
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setImageUrl(null)
+      }, 3000)
     } catch {
       setError('Upload failed — please try again.')
     } finally {
@@ -49,6 +58,7 @@ export function UploadForm() {
         <input
           type="file"
           accept="image/*"
+          key={file ? 'file-filled' : 'file-empty'}
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           required
           className="w-full text-sm text-muted file:mr-4 file:cursor-pointer file:rounded-md file:border-0 file:bg-text file:px-4 file:py-2 file:text-sm file:font-medium file:text-bg cursor-pointer"

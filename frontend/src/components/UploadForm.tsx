@@ -8,27 +8,36 @@ export function UploadForm() {
   const [category, setCategory] = useState('top')
   const [loading, setLoading] = useState(false)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!file || !user) return
 
     setLoading(true)
+    setError(null)
 
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('user_id', user.id)
-    formData.append('name', name)
-    formData.append('category', category)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('user_id', user.id)
+      formData.append('name', name)
+      formData.append('category', category)
 
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/upload-clothing-item`, {
-      method: 'POST',
-      body: formData,
-    })
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/upload-clothing-item`, {
+        method: 'POST',
+        body: formData,
+      })
 
-    const data = await response.json()
-    setImageUrl(data.image_url)
-    setLoading(false)
+      if (!response.ok) throw new Error('Upload failed')
+
+      const data = await response.json()
+      setImageUrl(data.image_url)
+    } catch {
+      setError('Upload failed — please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -65,6 +74,8 @@ export function UploadForm() {
           <option value="outerwear">Outerwear</option>
           <option value="accessory">Accessory</option>
         </select>
+
+        {error && <p className="text-sm text-red-400">{error}</p>}
 
         <button
           type="submit"

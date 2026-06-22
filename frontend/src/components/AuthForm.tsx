@@ -64,7 +64,7 @@ export function AuthForm() {
       <button
         type="button"
         onClick={() => setIsSignUp(!isSignUp)}
-        className="w-full text-center text-sm text-muted hover:text-text transition-colors"
+        className="w-full text-center text-sm text-muted underline decoration-dotted hover:text-text hover:decoration-solid transition-colors"
       >
         {isSignUp ? 'Already have an account? Log In' : "Don't have an account? Sign Up"}
       </button>

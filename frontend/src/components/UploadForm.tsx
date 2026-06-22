@@ -15,8 +15,6 @@ export function UploadForm() {
 
     setLoading(true)
 
-    // FormData is the browser's native way to build a multipart/form-data
-    // request — the same format Swagger was sending under the hood
     const formData = new FormData()
     formData.append('file', file)
     formData.append('user_id', user.id)
@@ -34,31 +32,54 @@ export function UploadForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-        required
-      />
-      <input
-        type="text"
-        placeholder="Item name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        required
-      />
-      <select value={category} onChange={(e) => setCategory(e.target.value)}>
-        <option value="top">Top</option>
-        <option value="bottom">Bottom</option>
-        <option value="shoes">Shoes</option>
-        <option value="outerwear">Outerwear</option>
-        <option value="accessory">Accessory</option>
-      </select>
-      <button type="submit" disabled={loading}>
-        {loading ? 'Uploading...' : 'Add to Closet'}
-      </button>
-      {imageUrl && <img src={imageUrl} alt={name} style={{ maxWidth: 200 }} />}
-    </form>
+    <section className="rounded-lg border border-border bg-surface p-6">
+      <h2 className="text-base font-semibold tracking-tight">Add to Closet</h2>
+      <p className="mt-1 text-sm text-muted">Upload a photo — the background gets removed automatically.</p>
+
+      <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          required
+          className="w-full text-sm text-muted file:mr-4 file:cursor-pointer file:rounded-md file:border-0 file:bg-text file:px-4 file:py-2 file:text-sm file:font-medium file:text-bg cursor-pointer"
+        />
+
+        <input
+          type="text"
+          placeholder="Item name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          className="w-full rounded-md border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-muted focus:outline-none focus:border-text transition-colors"
+        />
+
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="w-full rounded-md border border-border bg-bg px-3 py-2 text-sm text-text focus:outline-none focus:border-text transition-colors"
+        >
+          <option value="top">Top</option>
+          <option value="bottom">Bottom</option>
+          <option value="shoes">Shoes</option>
+          <option value="outerwear">Outerwear</option>
+          <option value="accessory">Accessory</option>
+        </select>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-md bg-text py-2 text-sm font-medium text-bg hover:opacity-90 disabled:opacity-50 transition-opacity"
+        >
+          {loading ? 'Uploading...' : 'Add to Closet'}
+        </button>
+
+        {imageUrl && (
+          <div className="pt-2">
+            <img src={imageUrl} alt={name} className="h-40 w-auto rounded-md border border-border" />
+          </div>
+        )}
+      </form>
+    </section>
   )
 }

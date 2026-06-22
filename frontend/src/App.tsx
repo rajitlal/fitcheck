@@ -7,15 +7,32 @@ function App() {
   const { user, signOut } = useAuth()
 
   if (!user) {
-    return <AuthForm />
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-bg px-4">
+        <AuthForm />
+      </div>
+    )
   }
 
   return (
-    <div>
-      <p>Logged in as {user.email}</p>
-      <button onClick={signOut}>Sign Out</button>
-      <UploadForm />
-      <MixAndMatch />
+    <div className="min-h-screen bg-bg text-text">
+      <header className="flex items-center justify-between border-b border-border px-6 py-4">
+        <h1 className="text-lg font-semibold tracking-tight">FitCheck</h1>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-muted">{user.email}</span>
+          <button
+            onClick={signOut}
+            className="text-sm text-muted hover:text-text transition-colors"
+          >
+            Sign Out
+          </button>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-4xl px-6 py-8 space-y-12">
+        <UploadForm />
+        <MixAndMatch />
+      </main>
     </div>
   )
 }

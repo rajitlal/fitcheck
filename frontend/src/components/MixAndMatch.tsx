@@ -79,29 +79,62 @@ export function MixAndMatch() {
     }
   }
 
-  if (loading) return <p>Loading...</p>
+  if (loading) return <p className="text-sm text-muted">Loading your closet...</p>
 
   return (
-    <div>
-      {CATEGORIES.map((category) => {
-        const items = itemsByCategory[category] || []
-        if (items.length === 0) return null
+    <section className="rounded-lg border border-border bg-surface p-6">
+      <h2 className="text-base font-semibold tracking-tight">Mix &amp; Match</h2>
+      <p className="mt-1 text-sm text-muted">Cycle through your closet to build an outfit.</p>
 
-        const index = selectedIndex[category] ?? 0
-        const currentItem = items[index]
+      <div className="mt-6 divide-y divide-border">
+        {CATEGORIES.map((category) => {
+          const items = itemsByCategory[category] || []
+          if (items.length === 0) return null
 
-        return (
-          <div key={category} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-            <button onClick={() => cycle(category, -1)}>←</button>
-            <div style={{ textAlign: 'center' }}>
-              <img src={currentItem.image_url} alt={currentItem.name} style={{ height: 150 }} />
-              <p>{currentItem.name}</p>
+          const index = selectedIndex[category] ?? 0
+          const currentItem = items[index]
+
+          return (
+            <div key={category} className="flex items-center gap-4 py-5 first:pt-0 last:pb-0">
+              <button
+                onClick={() => cycle(category, -1)}
+                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-border text-muted hover:border-text hover:text-text transition-colors"
+                aria-label={`Previous ${category}`}
+              >
+                ←
+              </button>
+
+              <div className="flex-1 text-center">
+                <p className="mb-2 text-xs uppercase tracking-wide text-muted">{category}</p>
+                <img
+                  src={currentItem.image_url}
+                  alt={currentItem.name}
+                  className="mx-auto h-36 w-auto"
+                />
+                <p className="mt-2 text-sm text-text">{currentItem.name}</p>
+                {items.length > 1 && (
+                  <p className="mt-0.5 text-xs text-muted">{index + 1} / {items.length}</p>
+                )}
+              </div>
+
+              <button
+                onClick={() => cycle(category, 1)}
+                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-border text-muted hover:border-text hover:text-text transition-colors"
+                aria-label={`Next ${category}`}
+              >
+                →
+              </button>
             </div>
-            <button onClick={() => cycle(category, 1)}>→</button>
-          </div>
-        )
-      })}
-      <button onClick={saveOutfit}>Save Outfit</button>
-    </div>
+          )
+        })}
+      </div>
+
+      <button
+        onClick={saveOutfit}
+        className="mt-6 w-full rounded-md bg-text py-2 text-sm font-medium text-bg hover:opacity-90 transition-opacity"
+      >
+        Save Outfit
+      </button>
+    </section>
   )
 }

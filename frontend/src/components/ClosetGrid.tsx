@@ -30,16 +30,31 @@ export function ClosetGrid() {
     fetchItems()
   }, [])
 
-  if (loading) return <p>Loading your closet...</p>
+  if (loading) return <p className="text-sm text-muted">Loading your closet...</p>
+
+  if (items.length === 0) {
+    return (
+      <section className="rounded-lg border border-border bg-surface p-6">
+        <h2 className="text-base font-semibold tracking-tight">Your Closet</h2>
+        <p className="mt-2 text-sm text-muted">Nothing uploaded yet — add your first item above.</p>
+      </section>
+    )
+  }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
-      {items.map((item) => (
-        <div key={item.id}>
-          <img src={item.image_url} alt={item.name} style={{ width: '100%' }} />
-          <p>{item.name} — {item.category}</p>
-        </div>
-      ))}
-    </div>
+    <section className="rounded-lg border border-border bg-surface p-6">
+      <h2 className="text-base font-semibold tracking-tight">Your Closet</h2>
+      <p className="mt-1 text-sm text-muted">{items.length} item{items.length !== 1 ? 's' : ''} saved.</p>
+
+      <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+        {items.map((item) => (
+          <div key={item.id} className="rounded-md border border-border bg-bg p-3">
+            <img src={item.image_url} alt={item.name} className="mx-auto h-24 w-auto" />
+            <p className="mt-2 truncate text-sm text-text">{item.name}</p>
+            <p className="text-xs uppercase tracking-wide text-muted">{item.category}</p>
+          </div>
+        ))}
+      </div>
+    </section>
   )
 }
